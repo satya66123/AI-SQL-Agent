@@ -1,0 +1,13 @@
+class SchemaReader:
+
+    def get_mysql_tables(self):
+        ...
+
+    def get_mysql_columns(self, table):
+        ...
+
+    def get_mongo_collections(self):
+        ...
+
+    def get_sample_document(self, collection):
+        ...
