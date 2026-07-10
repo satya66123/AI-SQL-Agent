@@ -10,6 +10,7 @@ from src.database.schema_service import SchemaService
 from src.ai.model_manager import ModelManager
 from src.history.query_history import QueryHistory
 from src.utils.execution_metrics import ExecutionMetrics
+from src.utils.chart_generator import ChartGenerator
 
 
 def show_ai_chat():
@@ -202,6 +203,8 @@ Examples:
                         st.success(
                             f"{row_count} row(s) returned."
                         )
+
+                        ChartGenerator.show(df)
                         # =====================================================
                         # Export Results
                         # =====================================================
