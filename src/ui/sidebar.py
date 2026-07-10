@@ -10,6 +10,7 @@ from src.ui.schema import show_schema
 from src.ui.ai_chat import show_ai_chat
 from src.ui.dashboard import show_dashboard
 from src.ui.saved_queries import show_saved_queries
+from src.ui.query_templates import show_query_templates
 
 from src.ui.query_history import show_query_history
 
@@ -45,6 +46,7 @@ def sidebar():
             "📊 Dashboard",
             "🗄 Database",
             "⭐ Saved Queries",
+            "📝 Query Templates",
             "📂 Schema Explorer",
             "📜 Query History",
             "📄 Logs",
@@ -60,6 +62,7 @@ def sidebar():
         "📊 Dashboard": show_dashboard,
         "🗄 Database": show_database,
         "⭐ Saved Queries": show_saved_queries,
+        "📝 Query Templates": show_query_templates,
         "📜 Query History": show_query_history,
         "📂 Schema Explorer": show_schema,
         "📄 Logs": show_logs,

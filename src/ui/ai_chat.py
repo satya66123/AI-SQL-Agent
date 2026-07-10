@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 import io
 
+from src.utils.pdf_export import PDFExport
+
 from src.analytics.analytics import Analytics
 
 from src.agents.orchestrator import AgentOrchestrator
@@ -101,10 +103,21 @@ Examples:
     # Question
     # =====================================================
 
+    default_question = ""
+
+    if "template_question" in st.session_state:
+        default_question = st.session_state["template_question"]
+
     question = st.text_area(
+
         "Enter your question",
+
+        value=default_question,
+
         placeholder="Example : Show employees earning more than 70000",
+
         height=120
+
     )
 
     # =====================================================
@@ -310,6 +323,7 @@ Examples:
 
                             )
 
+
                     else:
 
                         st.info(
@@ -335,6 +349,36 @@ Examples:
                     st.subheader("AI Explanation")
 
                     st.info(explanation)
+
+                    pdf = PDFExport.create(
+
+                        question,
+
+                        database,
+
+                        response["query"],
+
+                        explanation,
+
+                        row_count,
+
+                        metrics.elapsed()
+
+                    )
+
+                    st.download_button(
+
+                        "📄 Download PDF Report",
+
+                        data=pdf,
+
+                        file_name="AI_SQL_Report.pdf",
+
+                        mime="application/pdf",
+
+                        width="stretch"
+
+                    )
 
                 # =====================================================
                 # Execution Metrics
