@@ -1,0 +1,51 @@
+[theme]
+
+primaryColor="#00B4D8"
+
+backgroundColor="#0E1117"
+
+secondaryBackgroundColor="#1E1E2F"
+
+textColor="#FFFFFF"
+
+font="sans serif"
+
+
+[theme]
+
+primaryColor="#4F8BF9"
+
+backgroundColor="#0E1117"
+
+secondaryBackgroundColor="#1C2333"
+
+textColor="#FAFAFA"
+
+font="sans serif"
+
+
+[theme]
+
+primaryColor="#00C853"
+
+backgroundColor="#121212"
+
+secondaryBackgroundColor="#1E1E1E"
+
+textColor="#FFFFFF"
+
+font="sans serif"
+
+
+[theme]
+
+primaryColor="#7C4DFF"
+
+backgroundColor="#0B1020"
+
+secondaryBackgroundColor="#1A2035"
+
+textColor="#FFFFFF"
+
+font="sans serif"
+

@@ -1,10 +1,7 @@
 from src.agents.base_agent import BaseAgent
-from src.agents.memory_agent import MemoryAgent
 
 from src.database.schema_service import SchemaService
-
 from src.prompts.prompt_builder import PromptBuilder
-
 from src.validators.sql_validator import SQLValidator
 
 
@@ -16,77 +13,40 @@ class SQLAgent(BaseAgent):
 
         self.schema = SchemaService()
 
-        self.memory = MemoryAgent()
-
     # ----------------------------------------------------
     # Generate SQL
     # ----------------------------------------------------
 
     def generate_sql(self, question):
 
-        # Save current user question
-        self.memory.save_user_message(question)
-
-        # Build schema
+        # Read complete database schema
         schema = self.schema.build_complete_schema()
 
-        # Build question with previous context
-        context_question = self.memory.build_prompt(question)
-
-        # Build prompt
+        # Build AI prompt
         prompt = PromptBuilder.build_sql_prompt(
 
             schema=schema,
 
-            question=context_question
+            question=question
 
         )
 
-        # Ask AI
+        # Generate SQL
         sql = self.ask_ai(prompt)
 
-        print("RAW AI SQL")
+        print("=" * 80)
+        print("GENERATED SQL")
         print(sql)
-
-        # Save AI response
-        self.memory.save_assistant_message(sql)
+        print("=" * 80)
 
         # Validate SQL
-        result = SQLValidator.validate(sql)
+        validation = SQLValidator.validate(sql)
 
-        if result["success"]:
+        if validation["success"]:
 
-            return result["sql"]
+            return validation["sql"]
 
-        raise Exception(result["message"])
-
-    # ----------------------------------------------------
-    # Build Database Schema
-    # ----------------------------------------------------
-
-    def build_schema(self):
-
-        tables = self.schema.get_tables()
-
-        schema_text = ""
-
-        for table in tables:
-
-            schema_text += f"\nTable : {table}\n"
-
-            columns = self.schema.get_columns(table)
-
-            for column in columns:
-
-                schema_text += (
-
-                    f"{column['Field']} "
-
-                    f"{column['Type']}\n"
-
-                )
-
-        return schema_text
+        raise Exception(validation["message"])
 
     # ----------------------------------------------------
 

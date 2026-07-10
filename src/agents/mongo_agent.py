@@ -1,18 +1,4 @@
-"""
-MongoDB AI Agent
-
-Responsible for:
-
-1. Read MongoDB schema
-2. Read conversation history
-3. Build prompt
-4. Send prompt to selected AI provider
-5. Validate generated query
-6. Return MongoDB query
-"""
-
 from src.agents.base_agent import BaseAgent
-from src.agents.memory_agent import MemoryAgent
 
 from src.prompts.prompt_builder import PromptBuilder
 from src.database.schema_service import SchemaService
@@ -28,10 +14,6 @@ class MongoAgent(BaseAgent):
 
         self.schema = SchemaService()
 
-        self.memory = MemoryAgent()
-
-    # ----------------------------------------------------
-    # Build MongoDB Schema
     # ----------------------------------------------------
 
     def build_schema(self):
@@ -50,45 +32,31 @@ class MongoAgent(BaseAgent):
 
                 for key, value in sample.items():
 
-                    schema_text += (
-
-                        f"{key} : {type(value).__name__}\n"
-
-                    )
+                    schema_text += f"{key} : {type(value).__name__}\n"
 
         return schema_text
 
     # ----------------------------------------------------
-    # Generate Mongo Query
-    # ----------------------------------------------------
 
     def generate_query(self, question):
 
-        # Save user question
-        self.memory.save_user_message(question)
-
-        # Build schema
         schema = self.build_schema()
 
-        # Add previous conversation
-        context_question = self.memory.build_prompt(question)
-
-        # Build final prompt
         prompt = PromptBuilder.build_mongo_prompt(
 
             schema=schema,
 
-            question=context_question
+            question=question
 
         )
 
-        # Ask AI
         mongo_query = self.ask_ai(prompt)
 
-        # Save AI response
-        self.memory.save_assistant_message(mongo_query)
+        print("=" * 80)
+        print("RAW MONGO QUERY")
+        print(mongo_query)
+        print("=" * 80)
 
-        # Validate query
         result = MongoValidator.validate(mongo_query)
 
         if result["success"]:
