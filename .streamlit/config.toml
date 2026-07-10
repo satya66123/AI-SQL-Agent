@@ -1,51 +1,22 @@
-[theme]
 
+[theme]
+base="dark"
 primaryColor="#00B4D8"
-
 backgroundColor="#0E1117"
-
-secondaryBackgroundColor="#1E1E2F"
-
-textColor="#FFFFFF"
-
-font="sans serif"
-
-
-[theme]
-
-primaryColor="#4F8BF9"
-
-backgroundColor="#0E1117"
-
-secondaryBackgroundColor="#1C2333"
-
+secondaryBackgroundColor="#161B22"
 textColor="#FAFAFA"
-
 font="sans serif"
 
 
-[theme]
+[server]
+headless=true
+runOnSave=true
 
-primaryColor="#00C853"
+[browser]
+gatherUsageStats=false
 
-backgroundColor="#121212"
+[client]
+toolbarMode="minimal"
 
-secondaryBackgroundColor="#1E1E1E"
-
-textColor="#FFFFFF"
-
-font="sans serif"
-
-
-[theme]
-
-primaryColor="#7C4DFF"
-
-backgroundColor="#0B1020"
-
-secondaryBackgroundColor="#1A2035"
-
-textColor="#FFFFFF"
-
-font="sans serif"
-
+[runner]
+fastReruns=true
