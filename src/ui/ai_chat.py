@@ -13,6 +13,7 @@ from src.ai.model_manager import ModelManager
 from src.history.query_history import QueryHistory
 from src.utils.execution_metrics import ExecutionMetrics
 from src.utils.chart_generator import ChartGenerator
+from src.saved_queries.saved_queries import SavedQueries
 
 
 def show_ai_chat():
@@ -165,6 +166,20 @@ Examples:
                     response["query"]
                 )
 
+                SavedQueries.save(
+
+                    question,
+
+                    database,
+
+                    response["query"]
+
+                )
+
+                st.success("Query saved automatically.")
+                print("Query saved automatically.")
+
+
                 # =====================================================
                 # Generated Query
                 # =====================================================
@@ -190,6 +205,8 @@ Examples:
                     formatted_query,
                     language=language
                 )
+
+
 
                 # =====================================================
                 # Results
@@ -361,3 +378,4 @@ Examples:
             except Exception as e:
 
                 st.error(str(e))
+
