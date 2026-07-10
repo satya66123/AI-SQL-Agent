@@ -8,6 +8,7 @@ from src.ui.settings import show_settings
 from src.ui.about import show_about
 from src.ui.schema import show_schema
 from src.ui.ai_chat import show_ai_chat
+from src.ui.dashboard import show_dashboard
 
 from src.ui.query_history import show_query_history
 
@@ -40,6 +41,7 @@ def sidebar():
             "🏠 Home",
             "🤖 AI Chat",
             "🤖 AI Provider",
+            "📊 Dashboard",
             "🗄 Database",
             "📂 Schema Explorer",
             "📜 Query History",
@@ -53,6 +55,7 @@ def sidebar():
         "🏠 Home": show_home,
         "🤖 AI Chat": show_ai_chat,
         "🤖 AI Provider": show_provider,
+        "📊 Dashboard": show_dashboard,
         "🗄 Database": show_database,
         "📜 Query History": show_query_history,
         "📂 Schema Explorer": show_schema,

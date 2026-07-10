@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 import io
 
+from src.analytics.analytics import Analytics
+
 from src.agents.orchestrator import AgentOrchestrator
 
 from src.ai.provider import ProviderManager
@@ -139,6 +141,18 @@ Examples:
                     )
 
                 metrics.stop()
+
+                Analytics.add(
+
+                    database,
+
+                    provider,
+
+                    metrics.elapsed(),
+
+                    response["success"]
+
+                )
 
                 if not response["success"]:
 
