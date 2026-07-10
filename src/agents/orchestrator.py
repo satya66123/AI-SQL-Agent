@@ -148,7 +148,8 @@ class AgentOrchestrator:
         try:
 
             mongo_query = self.mongo_agent.process(
-                question
+                question,
+                collection
             )
 
             validation = MongoValidator.validate(

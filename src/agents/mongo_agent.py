@@ -16,31 +16,26 @@ class MongoAgent(BaseAgent):
 
     # ----------------------------------------------------
 
-    def build_schema(self):
+    def build_schema(self, collection):
 
         schema_text = ""
 
-        collections = self.schema.get_collections()
+        schema_text += f"Collection : {collection}\n\n"
 
-        for collection in collections:
+        sample = self.schema.sample_document(collection)
 
-            schema_text += f"\nCollection : {collection}\n"
+        if sample:
 
-            sample = self.schema.sample_document(collection)
-
-            if sample:
-
-                for key, value in sample.items():
-
-                    schema_text += f"{key} : {type(value).__name__}\n"
+            for key, value in sample.items():
+                schema_text += f"{key} : {type(value).__name__}\n"
 
         return schema_text
 
     # ----------------------------------------------------
 
-    def generate_query(self, question):
+    def generate_query(self, question, collection):
 
-        schema = self.build_schema()
+        schema = self.build_schema(collection)
 
         prompt = PromptBuilder.build_mongo_prompt(
 
@@ -67,6 +62,8 @@ class MongoAgent(BaseAgent):
 
     # ----------------------------------------------------
 
-    def process(self, question):
 
-        return self.generate_query(question)
+
+    def process(self, question, collection):
+
+        return self.generate_query(question, collection)

@@ -1,4 +1,4 @@
-
+from src.utils.query_formatter import QueryFormatter
 import streamlit as st
 import pandas as pd
 
@@ -208,9 +208,23 @@ Examples:
 
                     language = "javascript"
 
+                formatted_query = response["query"]
+
+                if database == "MySQL":
+
+                    formatted_query = QueryFormatter.format_sql(
+
+                        formatted_query
+
+                    )
+
+                else:
+
+                    formatted_query = response["query"]
+
                 st.code(
 
-                    response["query"],
+                    formatted_query,
 
                     language=language
 
