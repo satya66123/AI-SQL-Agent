@@ -3,6 +3,7 @@ from src.agents.mongo_agent import MongoAgent
 from src.agents.optimizer_agent import OptimizerAgent
 from src.agents.explanation_agent import ExplanationAgent
 from src.agents.error_recovery_agent import ErrorRecoveryAgent
+from src.agents.repair_agent import RepairAgent
 
 from src.database.query_service import QueryService
 
@@ -27,6 +28,8 @@ class AgentOrchestrator:
         self.query_service = QueryService()
 
         self.explainer = ExplanationAgent()
+
+        self.repair_agent = RepairAgent()
 
 
     # =====================================================
@@ -93,7 +96,67 @@ class AgentOrchestrator:
                 print(recovered_sql)
 
                 # Step 5 - Execute
+                # Step 5 - Execute
+                repairable_errors = [
+
+                    "unknown column",
+
+                    "unknown table",
+
+                    "doesn't exist",
+
+                    "syntax",
+
+                    "column",
+
+                    "table"
+
+                ]
                 result = self.query_service.execute_sql(recovered_sql)
+
+                # --------------------------------------
+                # AI SQL Repair
+                # --------------------------------------
+
+                if not result["success"]:
+
+                    error = result["error"].lower()
+
+                    if any(
+
+                            item in error
+
+                            for item in repairable_errors
+
+                    ):
+
+                        repaired_sql = self.repair_agent.repair(
+
+                            recovered_sql,
+
+                            result["error"]
+
+                        )
+
+                        print("=" * 80)
+                        print("REPAIRED SQL")
+                        print(repaired_sql)
+                        print("=" * 80)
+
+                        repaired = SQLValidator.validate(
+
+                            repaired_sql
+
+                        )
+
+                        if repaired["success"]:
+                            recovered_sql = repaired["sql"]
+
+                            result = self.query_service.execute_sql(
+
+                                recovered_sql
+
+                            )
 
                 # Step 6 - Explain
                 explanation = ""

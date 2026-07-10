@@ -34,6 +34,9 @@ class SQLAgent(BaseAgent):
         # Generate SQL
         sql = self.ask_ai(prompt)
 
+        # Testing recovery agent
+        #sql = sql.replace("salary", "salry")
+
         print("=" * 80)
         print("GENERATED SQL")
         print(sql)
