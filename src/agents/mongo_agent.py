@@ -47,6 +47,9 @@ class MongoAgent(BaseAgent):
 
         mongo_query = self.ask_ai(prompt)
 
+        # TEST ONLY
+        # mongo_query = mongo_query.replace(    "$gt","$gtt")
+
         print("=" * 80)
         print("RAW MONGO QUERY")
         print(mongo_query)
@@ -55,15 +58,16 @@ class MongoAgent(BaseAgent):
         result = MongoValidator.validate(mongo_query)
 
         if result["success"]:
-
             return result["query"]
 
         raise Exception(result["message"])
 
     # ----------------------------------------------------
 
-
-
-    def process(self, question, collection):
+    def process_mongo(self, question, collection):
 
         return self.generate_query(question, collection)
+
+    def process(self, question):
+
+        return NULL

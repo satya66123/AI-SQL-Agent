@@ -2,6 +2,7 @@ from src.utils.query_formatter import QueryFormatter
 import streamlit as st
 import pandas as pd
 import io
+from src.ui.query_suggestions import show_suggestions
 
 from src.utils.pdf_export import PDFExport
 
@@ -22,18 +23,10 @@ def show_ai_chat():
 
     st.title("🤖 AI SQL Assistant")
 
-    st.markdown(
-        """
-Ask questions in natural language.
+    show_suggestions()
 
-Examples:
+    st.divider()
 
-- Show all employees
-- Show employees earning more than 70000
-- Show all departments
-- Show customers from Hyderabad
-"""
-    )
 
     # =====================================================
     # Provider / Model / Database

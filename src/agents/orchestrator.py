@@ -4,6 +4,7 @@ from src.agents.optimizer_agent import OptimizerAgent
 from src.agents.explanation_agent import ExplanationAgent
 from src.agents.error_recovery_agent import ErrorRecoveryAgent
 from src.agents.repair_agent import RepairAgent
+from src.agents.mongo_repair_agent import MongoRepairAgent
 
 from src.database.query_service import QueryService
 
@@ -30,6 +31,8 @@ class AgentOrchestrator:
         self.explainer = ExplanationAgent()
 
         self.repair_agent = RepairAgent()
+
+        self.mongo_repair = MongoRepairAgent()
 
 
     # =====================================================
@@ -199,28 +202,90 @@ class AgentOrchestrator:
                 }
 
     # =====================================================
+    # Execute Mongo Operation
+    # =====================================================
+
+    def execute_mongo_operation(self, collection, parsed):
+
+        operation = parsed["operation"]
+
+        if operation == "find":
+
+            return self.query_service.execute_mongo(
+
+                collection,
+
+                parsed["query"]
+
+            )
+
+        elif operation == "find_one":
+
+            return self.query_service.execute_mongo_find_one(
+
+                collection,
+
+                parsed["query"]
+
+            )
+
+        elif operation == "aggregate":
+
+            return self.query_service.execute_mongo_aggregate(
+
+                collection,
+
+                parsed["pipeline"]
+
+            )
+
+        return {
+
+            "success": False,
+
+            "error": "Unsupported MongoDB operation."
+
+        }
+
+    # =====================================================
     # MONGODB
     # =====================================================
 
     def process_mongo(
-        self,
-        question,
-        collection
+
+            self,
+
+            question,
+
+            collection
+
     ):
 
         try:
 
-            mongo_query = self.mongo_agent.process(
+            # -----------------------------------------
+            # Step 1 - Generate Mongo Query
+            # -----------------------------------------
+
+            mongo_query = self.mongo_agent.process_mongo(
+
                 question,
+
                 collection
+
             )
 
+            # -----------------------------------------
+            # Step 2 - Validate
+            # -----------------------------------------
+
             validation = MongoValidator.validate(
+
                 mongo_query
+
             )
 
             if not validation["success"]:
-
                 return {
 
                     "success": False,
@@ -231,51 +296,97 @@ class AgentOrchestrator:
 
             mongo_query = validation["query"]
 
+            # -----------------------------------------
+            # Step 3 - Parse
+            # -----------------------------------------
+
             parsed = MongoParser.parse(
+
                 mongo_query
+
             )
 
-            operation = parsed["operation"]
+            # -----------------------------------------
+            # Step 4 - Execute
+            # -----------------------------------------
 
-            if operation == "find":
+            result = self.execute_mongo_operation(
 
-                result = self.query_service.execute_mongo(
+                collection,
 
-                    collection,
+                parsed
 
-                    parsed["query"]
+            )
 
-                )
+            # -----------------------------------------
+            # Step 5 - Mongo Repair
+            # -----------------------------------------
 
-            elif operation == "find_one":
+            repairable_errors = [
 
-                result = self.query_service.execute_mongo_find_one(
+                "unknown",
 
-                    collection,
+                "invalid",
 
-                    parsed["query"]
+                "syntax",
 
-                )
+                "operator",
 
-            elif operation == "aggregate":
+                "pipeline"
 
-                result = self.query_service.execute_mongo_aggregate(
+            ]
 
-                    collection,
+            if not result["success"]:
 
-                    parsed["pipeline"]
+                error = result["error"].lower()
 
-                )
+                if any(
 
-            else:
+                        item in error
 
-                return {
+                        for item in repairable_errors
 
-                    "success": False,
+                ):
 
-                    "error": "Unsupported MongoDB operation."
+                    repaired_query = self.mongo_repair.repair(
 
-                }
+                        mongo_query,
+
+                        result["error"]
+
+                    )
+
+                    print("=" * 80)
+                    print("REPAIRED MONGO")
+                    print(repaired_query)
+                    print("=" * 80)
+
+                    validation = MongoValidator.validate(
+
+                        repaired_query
+
+                    )
+
+                    if validation["success"]:
+                        mongo_query = validation["query"]
+
+                        parsed = MongoParser.parse(
+
+                            mongo_query
+
+                        )
+
+                        result = self.execute_mongo_operation(
+
+                            collection,
+
+                            parsed
+
+                        )
+
+            # -----------------------------------------
+            # Step 6 - AI Explanation
+            # -----------------------------------------
 
             explanation = ""
 
@@ -283,7 +394,11 @@ class AgentOrchestrator:
 
                 if "rows" in result:
 
-                    row_count = len(result["rows"])
+                    row_count = len(
+
+                        result["rows"]
+
+                    )
 
                 elif "row" in result:
 
@@ -302,6 +417,10 @@ class AgentOrchestrator:
                     row_count
 
                 )
+
+            # -----------------------------------------
+            # Return
+            # -----------------------------------------
 
             return {
 
