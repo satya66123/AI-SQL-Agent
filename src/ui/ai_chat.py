@@ -1,12 +1,15 @@
 from src.utils.query_formatter import QueryFormatter
 import streamlit as st
 import pandas as pd
+import io
 
 from src.agents.orchestrator import AgentOrchestrator
 
 from src.ai.provider import ProviderManager
 from src.database.schema_service import SchemaService
 from src.ai.model_manager import ModelManager
+from src.history.query_history import QueryHistory
+from src.utils.execution_metrics import ExecutionMetrics
 
 
 def show_ai_chat():
@@ -35,19 +38,12 @@ Examples:
     with col1:
 
         provider = st.selectbox(
-
             "Provider",
-
             [
-
                 "Ollama",
-
                 "OpenAI",
-
                 "Anthropic"
-
             ]
-
         )
 
         ProviderManager.set_provider(provider)
@@ -59,11 +55,8 @@ Examples:
         if models:
 
             model = st.selectbox(
-
                 "Model",
-
                 models
-
             )
 
             ProviderManager.set_model(model)
@@ -71,23 +64,16 @@ Examples:
         else:
 
             st.warning("No models found.")
-
             model = ""
 
     with col3:
 
         database = st.selectbox(
-
             "Database",
-
             [
-
                 "MySQL",
-
                 "MongoDB"
-
             ]
-
         )
 
     if database == "MongoDB":
@@ -97,11 +83,8 @@ Examples:
         collections = schema.get_collections()
 
         collection = st.selectbox(
-
             "Collection",
-
             collections
-
         )
 
     else:
@@ -115,13 +98,9 @@ Examples:
     # =====================================================
 
     question = st.text_area(
-
         "Enter your question",
-
         placeholder="Example : Show employees earning more than 70000",
-
         height=120
-
     )
 
     # =====================================================
@@ -129,93 +108,63 @@ Examples:
     # =====================================================
 
     if st.button(
-
         "🚀 Ask AI",
-
-        use_container_width=True
-
+        width="stretch"
     ):
 
         if not question.strip():
 
-            st.warning(
-
-                "Please enter a question."
-
-            )
-
+            st.warning("Please enter a question.")
             st.stop()
 
-        with st.spinner(
+        with st.spinner("Generating query..."):
 
-            "Generating query..."
-
-        ):
+            metrics = ExecutionMetrics()
+            metrics.start()
 
             try:
 
                 orchestrator = AgentOrchestrator()
 
-                # -------------------------
-                # MySQL
-                # -------------------------
-
                 if database == "MySQL":
 
-                    response = orchestrator.process_sql(
-
-                        question
-
-                    )
-
-                # -------------------------
-                # MongoDB
-                # -------------------------
+                    response = orchestrator.process_sql(question)
 
                 else:
 
                     response = orchestrator.process_mongo(
-
                         question,
-
                         collection
-
                     )
+
+                metrics.stop()
 
                 if not response["success"]:
 
-                    st.error(
-
-                        response["error"]
-
-                    )
-
+                    st.error(response["error"])
                     return
 
-                # -------------------------
-                # Generated Query
-                # -------------------------
-
-                st.subheader(
-
-                    "Generated Query"
-
+                QueryHistory.add(
+                    question,
+                    database,
+                    response["query"]
                 )
+
+                # =====================================================
+                # Generated Query
+                # =====================================================
+
+                st.subheader("Generated Query")
 
                 language = "sql"
 
                 if database == "MongoDB":
-
                     language = "javascript"
-
-                formatted_query = response["query"]
 
                 if database == "MySQL":
 
                     formatted_query = QueryFormatter.format_sql(
-
-                        formatted_query
-
+                        response["query"]
                     )
 
                 else:
@@ -223,99 +172,173 @@ Examples:
                     formatted_query = response["query"]
 
                 st.code(
-
                     formatted_query,
-
                     language=language
-
                 )
 
-                # -------------------------
+                # =====================================================
                 # Results
-                # -------------------------
+                # =====================================================
 
                 result = response["result"]
 
+                documents = result.get("rows", [])
+
+                row_count = len(documents)
+
                 if result["success"]:
 
-                    rows = result.get(
+                    if row_count > 0:
 
-                        "rows",
+                        df = pd.DataFrame(documents)
 
-                        []
-
-                    )
-
-                    if rows:
-
-                        df = pd.DataFrame(
-
-                            rows
-
-                        )
-
-                        st.subheader(
-
-                            "Query Results"
-
-                        )
+                        st.subheader("Query Results")
 
                         st.dataframe(
-
                             df,
-
-                            use_container_width=True
-
+                            width="stretch"
                         )
 
                         st.success(
-
-                            f"{len(df)} row(s) returned."
-
+                            f"{row_count} row(s) returned."
                         )
+                        # =====================================================
+                        # Export Results
+                        # =====================================================
+
+                        st.divider()
+
+                        st.subheader("📥 Export Results")
+
+                        col_csv, col_excel = st.columns(2)
+
+                        # -------------------------
+                        # CSV
+                        # -------------------------
+
+                        csv = df.to_csv(index=False).encode("utf-8")
+
+                        with col_csv:
+
+                            st.download_button(
+
+                                label="📄 Download CSV",
+
+                                data=csv,
+
+                                file_name="query_results.csv",
+
+                                mime="text/csv",
+
+                                width="stretch"
+
+                            )
+
+                        # -------------------------
+                        # Excel
+                        # -------------------------
+
+                        excel_buffer = io.BytesIO()
+
+                        with pd.ExcelWriter(
+
+                                excel_buffer,
+
+                                engine="openpyxl"
+
+                        ) as writer:
+
+                            df.to_excel(
+
+                                writer,
+
+                                index=False,
+
+                                sheet_name="Results"
+
+                            )
+
+                        excel_buffer.seek(0)
+
+                        with col_excel:
+
+                            st.download_button(
+
+                                label="📊 Download Excel",
+
+                                data=excel_buffer,
+
+                                file_name="query_results.xlsx",
+
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+                                width="stretch"
+
+                            )
 
                     else:
 
                         st.info(
-
                             "Query executed successfully. No rows returned."
-
                         )
 
                 else:
 
-                    st.error(
-
-                        result["error"]
-
-                    )
-
+                    st.error(result["error"])
                     return
 
-                # -------------------------
+                # =====================================================
                 # Explanation
-                # -------------------------
+                # =====================================================
 
                 explanation = response.get(
-
                     "explanation",
-
                     ""
-
                 )
 
                 if explanation:
 
-                    st.subheader(
+                    st.subheader("AI Explanation")
 
-                        "AI Explanation"
+                    st.info(explanation)
 
+                # =====================================================
+                # Execution Metrics
+                # =====================================================
+
+                st.divider()
+
+                st.subheader("📊 Execution Metrics")
+
+                c1, c2 = st.columns(2)
+                c3, c4 = st.columns(2)
+
+                with c1:
+
+                    st.metric(
+                        "Database",
+                        database
                     )
 
-                    st.info(
+                with c2:
 
-                        explanation
+                    st.metric(
+                        "Rows Returned",
+                        row_count
+                    )
 
+                with c3:
+
+                    st.metric(
+                        "Execution Time",
+                        f"{metrics.elapsed()} sec"
+                    )
+
+                with c4:
+
+                    st.metric(
+                        "Provider",
+                        f"{provider}\n{model}"
                     )
 
             except Exception as e:
