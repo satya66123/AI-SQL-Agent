@@ -1,20 +1,47 @@
+# ==============================
+# AI SQL Agent Requirements
+# ==============================
+
+# Web UI
 streamlit
-openai
-anthropic
-ollama
-python-dotenv
 
-pymysql
-sqlalchemy
+# Data Processing
+pandas>=2.3.0
+numpy>=2.2.0
 
-pymongo
+# MySQL
+PyMySQL>=1.1.1
+SQLAlchemy>=2.0.41
 
-pandas
+# MongoDB
+pymongo>=4.13.0
 
-plotly
-
-tabulate
-
+# HTTP Requests
 requests
 
-pytest
+# Environment Variables
+python-dotenv>=1.1.1
+
+# SQL Formatting
+sqlparse>=0.5.3
+
+# Excel Export
+openpyxl>=3.1.5
+
+# PDF Export
+reportlab>=4.4.2
+
+# PowerPoint Generation
+python-pptx>=1.0.2
+
+# Word Document Generation
+python-docx>=1.2.0
+
+# Images (Optional)
+Pillow
+
+# Date Utilities
+python-dateutil>=2.9.0
+
+# Markdown Support
+markdown>=3.8.2
